@@ -230,7 +230,7 @@ export ACTION=$2
 
 # defaults
 CASS_CLI=/opt/apigee/apigee-cassandra/bin/cassandra-cli
-CQLSH='cqlsh apigee-cassandra-default.apigee.svc.cluster.local --ssl -u $APIGEE_DML_USER -p $APIGEE_DML_PASSWORD'
+#CQLSH='cqlsh apigee-cassandra-default.apigee.svc.cluster.local --ssl -u $APIGEE_DML_USER -p $APIGEE_DML_PASSWORD'
 
 # emigrate an org, 4.50, 4.51
 # 
@@ -250,7 +250,7 @@ if [ "$OBJECT" = "organizations" ]; then
             check_options "CASS_IP"
             check_commands "$CQLSH"
 
-            $CQLSH $CASS_IP -e "select key from kms.organizations;"
+            $CQLSH $CASS_IP -u $APIGEE_DML_USER -p $APIGEE_DML_PASSWORD -e "select key from kms.organizations;"
 
         elif [ "$SRC" = "hybrid" ]; then
 
@@ -271,7 +271,7 @@ elif [ "$OBJECT" = "kek" ]; then
 
     if [ "$ACTION" = "export" ]; then
 
-        if [ "SRC" = "opdk" ]; then
+        if [ "$SRC" = "opdk" ]; then
             check_options "VAULT STOREPASS"
 
             KEK=$(cd $LIBDIR; java JKSExtractSKE $VAULT datastore-alias $STOREPASS $STOREPASS)
@@ -299,9 +299,10 @@ elif [ "$OBJECT" = "kvms" ]; then
         # at a cassandra node's VM:
 
         if [ "$SRC" = "opdk" ]; then
-            check_commands "$CASS_CLI  CASS_IP"
+            check_options "CASS_IP"
+            check_commands "$CASS_CLI"
 
-            echo -e "use keyvaluemap;\nget keyvaluemaps_r21[org];" | $CASS_CLI -h $CASS_IP > $EMIGRATE_DIR/$ORG-kvms.out
+            echo -e "use keyvaluemap;\nget keyvaluemaps_r21[$ORG];" | $CASS_CLI -h $CASS_IP -u $APIGEE_DML_USER -pw $APIGEE_DML_PASSWORD > $EMIGRATE_DIR/$ORG-kvms.out
         elif [ "$SRC" = "hybrid" ]; then
             # hybrid
             check_commands "kubectl"
