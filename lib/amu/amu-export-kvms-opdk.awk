@@ -1,6 +1,6 @@
 #!/usr/bin/env awk
 
-@include "awk-lib.awk"
+@include "amu-lib.awk"
 
 BEGIN{
 
@@ -64,7 +64,7 @@ END{
 
         scope = ts[1]
         kvm = ts[2]
-print "  kvm: " kvm        
+print " kvm: " kvm        
 print "  scope: " scope
         if( scope ~ /^$/ ){
 
@@ -92,21 +92,20 @@ print "  scope: " scope
             print "Scope is not recognised: " scope
         }
 print "  scopetype: " scopetype
-print " folder: " folder
+print "  folder: " folder
 
         dekhex = keystores[ scope "s@kvmaps:s@__ apigee__kvm__.keystore"  ]
         # process kvm entries
 
         encrypted = jqget( kvmaps[ scopename ], ".__apigee__encrypted"  )
-        
-        entries = jqget( kvmaps[ scopename ], "." kvm )
+        entries = jqget( kvmaps[ scopename ], ".\"" kvm "\"" )
 
         if( encrypted == "null" ){
 
             json = json entries
         }else{
 
-            sep = ""
+            unique_sep = ""
 
             json = json "["
 
@@ -120,9 +119,9 @@ print " folder: " folder
                 name = csvarr[1]
                 value = aesdecrypt( csvarr[2], dekhex )
 
-                json = json sep "{\"name\":" name ",\"value\":\"" value "\"}"
+                json = json unique_sep "{\"name\":" name ",\"value\":\"" value "\"}"
 
-                sep = ", "
+                unique_sep = ", "
             }
             close(cmd)
             json = json "]"
